@@ -45,6 +45,9 @@ public extension AnySignal {
 }
 
 public class Signal<T> : AnySignal {
+    public init() {
+        
+    }
     public var subscriptions = [Subscription<T>]()
     public func append(subscription: Subscription<T>) {
         subscriptions.append(subscription)
