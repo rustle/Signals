@@ -66,7 +66,7 @@ public class Subscription<T> {
     public typealias Handler = (T) -> Void
     public typealias Dispose = () -> Void
     public typealias Filter = (T) -> Bool
-    var handler: Handler?
+    public private(set) var handler: Handler?
     private var dispose: Dispose?
     private var queue: DispatchQueue?
     private var filter: Filter?
