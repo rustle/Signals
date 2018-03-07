@@ -70,25 +70,31 @@ public class Subscription<T> {
     private var dispose: Dispose?
     private var queue: DispatchQueue?
     private var filter: Filter?
+    private weak var observer: AnyObject?
+    private var expectObserver = false
     private var sampler: Sampler<T>?
     public init(handler: @escaping Handler) {
         self.handler = handler
     }
+    /// Called when Subscription is canceled.
     @discardableResult
     public func dispose(_ dispose: @escaping Dispose) -> Self {
         self.dispose = dispose
         return self
     }
+    /// Calls to handler will be scheduled on `queue`.
     @discardableResult
     public func queue(_ queue: DispatchQueue) -> Self {
         self.queue = queue
         return self
     }
+    /// Only fire subscription if predicate returns true.
     @discardableResult
-    public func filter(_ filter: @escaping Filter) -> Self {
-        self.filter = filter
+    public func filter(_ predicate: @escaping Filter) -> Self {
+        self.filter = predicate
         return self
     }
+    /// Allow subscription to fire, at most, every `interval` seconds.
     @discardableResult
     public func sample(every interval: TimeInterval) -> Self {
         if sampler == nil {
@@ -99,6 +105,13 @@ public class Subscription<T> {
             sampler?.queue = queue
         }
         sampler?.interval = interval
+        return self
+    }
+    /// When observer goes to nil, Subscription will no longer fire().
+    @discardableResult
+    public func with(observer: AnyObject) -> Self {
+        expectObserver = true
+        self.observer = observer
         return self
     }
     public func cancel() {
@@ -116,6 +129,12 @@ public class Subscription<T> {
         }
     }
     internal func fire(_ data: T) {
+        if expectObserver, observer == nil {
+            return
+        }
+        guard let _ = handler else {
+            return
+        }
         if let sampler = sampler {
             sampler.enqueue(data: data)
         } else {
@@ -123,6 +142,9 @@ public class Subscription<T> {
         }
     }
     private func actuallyFire(_ data: T) {
+        if expectObserver, observer == nil {
+            return
+        }
         guard let handler = handler else {
             return
         }

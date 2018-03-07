@@ -91,4 +91,15 @@ class SignalsTests: XCTestCase {
             
         }
     }
+    func testWithObserver() {
+        let signal = Signal<String>()
+        var count = 0
+        var foo: NSObject? = NSObject()
+        signal.subscribe { _ in
+            count += 1
+        }.with(observer: foo!)
+        foo = nil
+        signal⏦"foo"
+        XCTAssertEqual(count, 0)
+    }
 }
