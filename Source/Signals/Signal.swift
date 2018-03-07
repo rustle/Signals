@@ -102,6 +102,9 @@ public class Subscription<T> {
         return self
     }
     public func cancel() {
+        let dispose = self.dispose
+        handler = nil
+        self.dispose = nil
         if let dispose = dispose {
             if let queue = queue {
                 queue.async {
@@ -111,8 +114,6 @@ public class Subscription<T> {
                 dispose()
             }
         }
-        handler = nil
-        dispose = nil
     }
     internal func fire(_ data: T) {
         if let sampler = sampler {
