@@ -25,18 +25,18 @@ public protocol AnySignal : class {
 
 public extension AnySignal {
     @discardableResult
-    public func subscribe(handler: @escaping Subscription<T>.Handler) -> Subscription<T> {
+    func subscribe(handler: @escaping Subscription<T>.Handler) -> Subscription<T> {
         let subscription = Subscription(handler: handler)
         append(subscription: subscription)
         return subscription
     }
-    public func fire(_ data: T) {
+    func fire(_ data: T) {
         flush()
         for subscription in subscriptions {
             subscription.fire(data)
         }
     }
-    public func cancelAll() {
+    func cancelAll() {
         for subscription in subscriptions {
             subscription.cancel()
         }
